@@ -26,8 +26,9 @@ REQUIRE_RUSTFMT=0
 export RUSTFLAGS="-C target-cpu=native"
 
 native () {
-    make -j $proc -C $BASE_DIR/native
-#    make -C $BASE_DIR/native install
+    make -j `nproc` -C $BASE_DIR/native
+    mkdir -p $BASE_DIR/target/native
+    cp $BASE_DIR/native/libzcsi.so $BASE_DIR/target/native/libzcsi.so
 }
 
 
@@ -107,12 +108,12 @@ case $TASK in
     build)
         native
         pushd $BASE_DIR/framework
-        ${CARGO} build --release
+        ${CARGO} build --release -j `nproc`
         popd
 
         for example in ${examples[@]}; do
             pushd ${BASE_DIR}/${example}
-            ${CARGO} build --release
+            ${CARGO} build --release -j `nproc`
             popd
         done
         ;;
