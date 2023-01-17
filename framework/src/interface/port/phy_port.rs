@@ -12,7 +12,7 @@ use ipnet::Ipv4Net;
 use libc::if_indextoname;
 use native::zcsi::rte_ethdev_api::{
     rte_eth_dev_info, rte_eth_dev_info_get, rte_eth_dev_rx_offload_name, rte_eth_dev_tx_offload_name,
-    rte_eth_macaddr_get, rte_eth_rx_mq_mode_ETH_MQ_RX_NONE, rte_eth_rx_mq_mode_ETH_MQ_RX_RSS, rte_ether_addr, rte_flow,
+    rte_eth_macaddr_get, rte_eth_rx_mq_mode_ETH_MQ_RX_NONE, rte_ether_addr, rte_flow,
 };
 use native::zcsi::rte_ethdev_api::{RTE_ETH_FLOW_MAX, RTE_ETH_FLOW_UNKNOWN};
 use native::zcsi::{
@@ -920,7 +920,7 @@ impl PmdPort {
         if actual_rxqs > 0 && actual_txqs > 0 {
             // DPDK no longer accepts RSS on some virtual ports like virtio
             let rx_mq_mode = if port_type == Physical {
-                rte_eth_rx_mq_mode_ETH_MQ_RX_RSS
+                rte_eth_rx_mq_mode_ETH_MQ_RX_NONE
             } else {
                 rte_eth_rx_mq_mode_ETH_MQ_RX_NONE
             };
