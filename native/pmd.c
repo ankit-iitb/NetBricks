@@ -60,8 +60,8 @@ static const struct rte_eth_conf default_eth_conf = {
         /* we need the flow director feature, further configuration is set via rte_flow */
         .fdir_conf =
                 {
-                        .mode = RTE_FDIR_MODE_PERFECT,
-                        .pballoc = RTE_FDIR_PBALLOC_256K,
+                        .mode = RTE_FDIR_MODE_NONE,
+                        .pballoc = RTE_FDIR_PBALLOC_64K,
                         .status = RTE_FDIR_NO_REPORT_STATUS,
                         .drop_queue = 0,
                         .mask = { // every mask in big endian

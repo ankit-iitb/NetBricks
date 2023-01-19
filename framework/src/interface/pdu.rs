@@ -63,6 +63,11 @@ impl<'a> HeaderStack<'a> {
     }
 
     #[inline]
+    pub fn udp_mut(&mut self, which: usize) -> &mut UdpHeader {
+        self.stack[which].as_udp_mut().unwrap()
+    }
+
+    #[inline]
     pub fn ip_mut(&mut self, which: usize) -> &mut IpHeader {
         self.stack[which].as_ip_mut().unwrap()
     }
@@ -80,6 +85,11 @@ impl<'a> HeaderStack<'a> {
     #[inline]
     pub fn tcp(&self, which: usize) -> &TcpHeader {
         self.stack[which].as_tcp().unwrap()
+    }
+
+    #[inline]
+    pub fn udp(&self, which: usize) -> &UdpHeader {
+        self.stack[which].as_udp().unwrap()
     }
 
     #[inline]
@@ -234,6 +244,14 @@ impl<'a> Pdu<'a> {
     }
 
     #[inline]
+    fn parse_udp(&mut self, offset: usize) {
+        let hdr = unsafe { (*self.mbuf).data_address(offset) as *mut UdpHeader };
+        unsafe {
+            self.header_stack.push(Header::Udp(&mut *hdr));
+        }
+    }
+
+    #[inline]
     fn parse_ipv4(&mut self, offset: usize) {
         let hdr = unsafe { (*self.mbuf).data_address(offset) as *mut IpHeader };
         unsafe {
@@ -252,6 +270,11 @@ impl<'a> Pdu<'a> {
             6 => {
                 if self.data_len() >= ip_length as usize + offset {
                     self.parse_tcp(offset + ip_offset);
+                }
+            }
+            17 => {
+                if self.data_len() >= ip_length as usize + offset {
+                    self.parse_udp(offset + ip_offset);
                 }
             }
             _ => {}
@@ -525,7 +548,7 @@ impl<'a> Pdu<'a> {
     }
 
     #[inline]
-    fn payload(&self, which: usize) -> Option<*const u8> {
+    pub fn payload(&self, which: usize) -> Option<*const u8> {
         let headers = self.header_stack.count();
         match which {
             x if x + 1 < headers => self.header_stack.get(x + 1).as_ptr_u8(),
