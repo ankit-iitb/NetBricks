@@ -93,4 +93,11 @@ impl UdpHeader {
     pub fn set_checksum(&mut self, csum: u16) {
         self.csum = u16::to_be(csum);
     }
+
+    #[inline]
+    pub fn swap_addresses(&mut self) {
+        let tmp = self.src_port();
+        self.set_src_port(self.dst_port());
+        self.set_dst_port(tmp);
+    }
 }

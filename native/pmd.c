@@ -302,6 +302,8 @@ int init_pmd_port(uint16_t port, uint16_t rxqs, uint16_t txqs, int rxq_core[], i
 
     /* Disable promiscuous mode */
     rte_eth_promiscuous_disable(port);
+    ret = rte_eth_promiscuous_get(port);
+    RTE_LOG(INFO, PMD, "Promiscuous mode is %s\n", ret == 0? "disabled" : "enabled");
 
     for (i = 0; i < rxqs; i++) {
         int sid = rte_lcore_to_socket_id(rxq_core[i]);

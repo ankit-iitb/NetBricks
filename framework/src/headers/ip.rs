@@ -259,4 +259,11 @@ impl IpHeader {
             self.set_csum(checksum(bytes, 5));
         };
     }
+
+    #[inline]
+    pub fn swap_addresses(&mut self) {
+        let src = self.src();
+        self.set_src(self.dst());
+        self.set_dst(src);
+    }
 }
