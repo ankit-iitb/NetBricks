@@ -1,46 +1,22 @@
+use std::arch::x86_64::{__rdtscp, _mm_pause, _rdtsc};
+
 #[inline]
 pub fn cpuid() {
-    unsafe {
-        asm!("movl $$0x2, %eax":::"eax");
-        asm!("movl $$0x0, %ecx":::"ecx");
-        asm!("cpuid"
-             :
-             :
-             : "rax rbx rcx rdx");
-    }
+    unimplemented!("cpuid");
 }
 
 #[inline]
 pub fn rdtsc_unsafe() -> u64 {
-    unsafe {
-        let low: u32;
-        let high: u32;
-        asm!("rdtsc"
-             : "={eax}" (low), "={edx}" (high)
-             :
-             : "rdx rax"
-             : "volatile");
-        ((high as u64) << 32) | (low as u64)
-    }
+    unsafe { _rdtsc() }
 }
 
 #[inline]
 pub fn rdtscp_unsafe() -> u64 {
-    let high: u32;
-    let low: u32;
-    unsafe {
-        asm!("rdtscp"
-             : "={eax}" (low), "={edx}" (high)
-             :
-             : "ecx"
-             : "volatile");
-        ((high as u64) << 32) | (low as u64)
-    }
+    let mut aux: u32 = 0;
+    unsafe { __rdtscp(&mut aux) }
 }
 
 #[inline]
 pub fn pause() {
-    unsafe {
-        asm!("pause"::::"volatile");
-    }
+    unsafe { _mm_pause() };
 }

@@ -1,5 +1,7 @@
-use super::PortStats;
+use crate::native_include::dpdk_bindings::rte_eth_macaddr_get;
+
 use super::super::{PacketRx, PacketTx};
+use super::PortStats;
 use allocators::*;
 use common::*;
 use config::{PortConfiguration, NUM_RXD, NUM_TXD};
@@ -9,8 +11,8 @@ use regex::Regex;
 use std::cmp::min;
 use std::ffi::CString;
 use std::fmt;
-use std::sync::Arc;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 
 /// A DPDK based PMD port. Send and receive should not be called directly on this structure but on the port queue
 /// structure instead.
@@ -306,7 +308,8 @@ impl PmdPort {
                 loopback,
                 tso,
                 csumoffload,
-            ).chain_err(|| ErrorKind::BadDev(String::from(spec)))
+            )
+            .chain_err(|| ErrorKind::BadDev(String::from(spec)))
         } else {
             Err(ErrorKind::BadDev(String::from(spec)).into())
         }
@@ -400,16 +403,7 @@ impl PmdPort {
         tx_cores: &[i32],
     ) -> Result<Arc<PmdPort>> {
         PmdPort::new_port_with_queues_descriptors_offloads(
-            name,
-            rxqs,
-            txqs,
-            rx_cores,
-            tx_cores,
-            NUM_RXD,
-            NUM_TXD,
-            false,
-            false,
-            false,
+            name, rxqs, txqs, rx_cores, tx_cores, NUM_RXD, NUM_TXD, false, false, false,
         )
     }
 
@@ -436,10 +430,17 @@ impl PmdPort {
 
     #[inline]
     pub fn mac_address(&self) -> MacAddress {
-        let mut address = MacAddress { addr: [0; 6] };
+        let mut address: rte_ether_addr = rte_ether_addr { addr_bytes: [0u8; 6] };
         unsafe {
-            rte_eth_macaddr_get(self.port, &mut address as *mut MacAddress);
-            address
+            rte_eth_macaddr_get(self.port as u16, &mut address);
         }
+        MacAddress::new(
+            address.addr_bytes[0],
+            address.addr_bytes[1],
+            address.addr_bytes[2],
+            address.addr_bytes[3],
+            address.addr_bytes[4],
+            address.addr_bytes[5],
+        )
     }
 }

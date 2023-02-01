@@ -4,27 +4,6 @@ set -e
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 BUILD_SCRIPT=$( basename "$0" )
 
-EXT_BASE="$BASE_DIR/3rdparty"
-TOOLS_BASE="$BASE_DIR/3rdparty/tools"
-DOWNLOAD_DIR="${BASE_DIR}/3rdparty/downloads"
-SCRIPTS_DIR="${EXT_BASE}/scripts"
-BIN_DIR="${TOOLS_BASE}/bin"
-if [ ! -e $DOWNLOAD_DIR ]; then
-    mkdir -p ${DOWNLOAD_DIR}
-fi
-if [ ! -e ${TOOLS_BASE} ]; then
-    mkdir -p ${TOOLS_BASE}
-fi
-DPDK_VER=17.08
-DPDK_HOME="${BASE_DIR}/3rdparty/dpdk"
-DPDK_LD_PATH="${DPDK_HOME}/build/lib"
-DPDK_CONFIG_FILE=${DPDK_CONFIG_FILE-"${EXT_BASE}/dpdk-confs/common_linuxapp-${DPDK_VER}"}
-if grep "CONFIG_RTE_BUILD_SHARED_LIB=y" ${DPDK_CONFIG_FILE}; then
-    DPDK="${DPDK_HOME}/build/lib/libdpdk.so"
-else
-    DPDK="${DPDK_HOME}/build/lib/libdpdk.a"
-fi
-
 CARGO_LOC=`which cargo || true`
 export CARGO=${CARGO_PATH-"${CARGO_LOC}"}
 #if [ -z ${CARGO} ] || [ ! -e ${CARGO} ]; then
@@ -161,15 +140,6 @@ clean () {
 UNWIND_BUILD="${TOOLS_BASE}"/libunwind
 
 deps () {
-    # Build DPDK
-    export DPDK_CONFIG_FILE=${DPDK_CONFIG_FILE}
-    export DPDK_VER=${DPDK_VER}
-    if [ ! -e $DPDK ]; then
-        dpdk
-    else
-        echo "DPDK found not building"
-    fi
-
     rust
 
     if [ ${REQUIRE_RUSTFMT} -ne 0 ]; then
@@ -187,11 +157,6 @@ clean_deps() {
     rm -rf ${MUSL_RESULT} || true
     rm -rf ${DPDK_HOME} || true
     echo "Cleaned DEPS"
-}
-
-dpdk () {
-    $BASE_DIR/3rdparty/get-dpdk.sh ${DOWNLOAD_DIR}
-    proc="$(nproc)"
 }
 
 musl () {
@@ -293,8 +258,12 @@ case $TASK in
         popd
         ;;
     build)
+<<<<<<< HEAD
         deps
 
+=======
+        find_sctp
+>>>>>>> c35bde0 (Minor.)
         native
 
         find_sctp
