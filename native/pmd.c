@@ -207,8 +207,9 @@ int send_pkts(int port, int qid, mbuf_array_t pkts, int len) {
 int find_port_with_pci_address(const char* pci) {
     struct rte_pci_addr addr;
     char devargs[1024];
-    int ret;
-    //uint8_t port_id;
+    uint16_t pi;
+    uint8_t port;
+    struct rte_dev_iterator iterator;
 
     // Cannot parse address
     if (rte_pci_addr_parse(pci, &addr) != 0) {
@@ -234,12 +235,23 @@ int find_port_with_pci_address(const char* pci) {
 
     snprintf(devargs, 1024, "%04x:%02x:%02x.%02x", addr.domain, addr.bus, addr.devid, addr.function);
 
-    ret = 0;//rte_eth_dev_attach(devargs, &port_id);
+    uint16_t portid_ptr[16];
+    uint16_t* ptr;
+    ptr = portid_ptr;
+    int count=0;
 
-    if (ret < 0) {
-        return -1;
+    RTE_ETH_FOREACH_MATCHING_DEV(pi, devargs, &iterator) {
+        /* setup ports matching the devargs used for probing */
+        *ptr = pi;
+        ptr++;
+        count++;
+        if (count >= 16) break;
     }
-    return (int)0;
+    if (count == 0) {
+        return -ENODEV;
+    }
+    port = portid_ptr[0];
+    return (int)port;
 }
 
 /* Attach a device with a given name (useful when attaching virtual devices). Returns either the
