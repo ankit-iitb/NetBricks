@@ -173,10 +173,10 @@ mod tests {
         let mut buf = RingBuffer::new(32).unwrap();
         let mut data: Vec<u8> = vec![42, 43, 44];
 
-        buf.wrapped_write(2, &mut data);
+        buf.wrapped_write(2, &data);
         assert_eq!(buf.vec[2..5], [42, 43, 44]);
 
-        buf.wrapped_write(7, &mut data);
+        buf.wrapped_write(7, &data);
         assert_eq!(buf.vec[7..10], [42, 43, 44]);
 
         let mut read3 = vec![0; 3];
@@ -194,7 +194,7 @@ mod tests {
         let size = buf.size;
         let mut data: Vec<u8> = vec![42, 43, 44, 45, 46];
 
-        buf.wrapped_write(size - 2, &mut data);
+        buf.wrapped_write(size - 2, &data);
 
         let mut read = vec![0; data.len()];
         buf.wrapped_read(size - 2, &mut read);

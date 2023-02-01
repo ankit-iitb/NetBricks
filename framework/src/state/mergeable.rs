@@ -141,7 +141,7 @@ impl<T: AddAssign<T> + Default + Clone> MergeableStoreDP<T> {
                 g.extend(self.cache.drain(0..));
                 self.cache_size = self.base_cache_size;
                 self.len = g.len();
-                g.remove(flow).unwrap_or_else(Default::default)
+                g.remove(flow).unwrap_or_default()
             }
             _ => panic!("Could not acquire write lock"),
         }

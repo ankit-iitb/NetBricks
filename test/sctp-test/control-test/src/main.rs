@@ -1,5 +1,5 @@
 #![feature(box_syntax)]
-#![feature(asm)]
+
 extern crate e2d2;
 extern crate fnv;
 extern crate time;
@@ -66,7 +66,7 @@ fn main() {
     opts.optopt("d", "delay", "Delay cycles", "cycles");
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
-        Err(f) => panic!(f.to_string()),
+        Err(f) => panic!("{}", f.to_string()),
     };
     if matches.opt_present("h") {
         print!("{}", opts.usage(&format!("Usage: {} [options]", program)));

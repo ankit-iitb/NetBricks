@@ -54,11 +54,11 @@ impl<T: TcpControlAgent> TcpControlServer<T> {
         handle.new_io_port(&listener, listener_token);
         handle.schedule_read(&listener, listener_token);
         TcpControlServer {
-            listener: listener,
-            scheduler: scheduler,
-            handle: handle,
+            listener,
+            scheduler,
+            handle,
             next_token: listener_token + 1,
-            listener_token: listener_token,
+            listener_token,
             phantom_t: PhantomData,
             connections: HashMap::with_capacity_and_hasher(32, Default::default()),
         }
@@ -110,7 +110,7 @@ impl<T: TcpControlAgent> TcpControlServer<T> {
     fn handle_data(&mut self, token: Token, available: Available) {
         let preserve = {
             match self.connections.get_mut(&token) {
-                Some(mut connection) => {
+                Some(connection) => {
                     if available & READ != 0 {
                         connection.handle_read_ready()
                     } else if available & WRITE != 0 {

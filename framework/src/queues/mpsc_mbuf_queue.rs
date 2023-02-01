@@ -37,7 +37,7 @@ impl MpscQueue {
             size
         };
         MpscQueue {
-            slots: slots,
+            slots,
             mask: slots - 1,
             queue: (0..slots).map(|_| Default::default()).collect(),
             producer: Default::default(),

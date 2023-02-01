@@ -1,3 +1,5 @@
+use std::arch::asm;
+
 use e2d2::headers::*;
 use e2d2::operators::*;
 

@@ -1,4 +1,4 @@
-#![feature(asm)]
+
 #[inline]
 fn rdtscp_unsafe() -> u64 {
     let high: u32;

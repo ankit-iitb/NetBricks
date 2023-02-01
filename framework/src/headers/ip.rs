@@ -75,15 +75,15 @@ impl IpHeader {
         if (protocol == 6 || protocol == 17) && self.payload_size(0) >= 4 {
             unsafe {
                 let self_as_u8 = (self as *const IpHeader) as *const u8;
-                let port_as_u8 = self_as_u8.offset(self.offset() as isize);
+                let port_as_u8 = self_as_u8.add(self.offset());
                 let port_slice = slice::from_raw_parts(port_as_u8, 4);
                 let dst_port = BigEndian::read_u16(&port_slice[..2]);
                 let src_port = BigEndian::read_u16(&port_slice[2..]);
                 Some(Flow {
-                    src_ip: src_ip,
-                    dst_ip: dst_ip,
-                    src_port: src_port,
-                    dst_port: dst_port,
+                    src_ip,
+                    dst_ip,
+                    src_port,
+                    dst_port,
                     proto: protocol,
                 })
             }

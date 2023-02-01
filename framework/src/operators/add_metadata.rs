@@ -7,7 +7,7 @@ use interface::Packet;
 use interface::PacketTx;
 use std::marker::PhantomData;
 
-pub type MetadataFn<T, M, M2> = Box<FnMut(&Packet<T, M>) -> M2 + Send>;
+pub type MetadataFn<T, M, M2> = Box<dyn FnMut(&Packet<T, M>) -> M2 + Send>;
 
 pub struct AddMetadataBatch<M, V>
 where
@@ -27,8 +27,8 @@ where
 {
     pub fn new(parent: V, generator: MetadataFn<V::Header, V::Metadata, M>) -> AddMetadataBatch<M, V> {
         AddMetadataBatch {
-            parent: parent,
-            generator: generator,
+            parent,
+            generator,
             applied: false,
             _phantom_m: PhantomData,
         }

@@ -1,5 +1,5 @@
 #![feature(box_syntax)]
-#![feature(asm)]
+
 extern crate e2d2;
 extern crate fnv;
 extern crate getopts;
@@ -45,7 +45,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let matches = match opts.parse(&args[1..]) {
         Ok(m) => m,
-        Err(f) => panic!(f.to_string()),
+        Err(f) => panic!("{}", f.to_string()),
     };
     let configuration = read_matches(&matches, &opts);
 

@@ -8,7 +8,7 @@ use interface::Packet;
 use interface::PacketTx;
 use std::marker::PhantomData;
 
-pub type TransformFn<T, M> = Box<FnMut(&mut Packet<T, M>) + Send>;
+pub type TransformFn<T, M> = Box<dyn FnMut(&mut Packet<T, M>) + Send>;
 
 pub struct TransformBatch<T, V>
 where
@@ -28,8 +28,8 @@ where
 {
     pub fn new(parent: V, transformer: TransformFn<T, V::Metadata>) -> TransformBatch<T, V> {
         TransformBatch {
-            parent: parent,
-            transformer: transformer,
+            parent,
+            transformer,
             applied: false,
             phantom_t: PhantomData,
         }

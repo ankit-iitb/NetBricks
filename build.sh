@@ -1,6 +1,7 @@
 #!/bin/bash
 # Stop on any errors
-set -ex
+set -e
+
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 BUILD_SCRIPT=$( basename "$0" )
 
@@ -242,7 +243,7 @@ case $TASK in
             echo "No Cargo.toml, not valid"
         fi
         pushd ${BASE_DIR}/test/${build_dir}
-            ${CARGO} build --release
+            ${CARGO} build --release -j `nproc`
         popd
         ;;
     build_fmwk)
@@ -253,7 +254,7 @@ case $TASK in
         if [ ${SCTP_PRESENT} -eq 1 ]; then
             ${CARGO} build --release --features "sctp"
         else
-            ${CARGO} build --release
+            ${CARGO} build --release -j `nproc`
         fi
         popd
         ;;
@@ -263,7 +264,7 @@ case $TASK in
         if [ ${SCTP_PRESENT} -eq 1 ]; then
             ${CARGO} build --release --features "sctp"
         else
-            ${CARGO} build --release
+            ${CARGO} build --release -j `nproc`
         fi
         popd
 
@@ -271,12 +272,12 @@ case $TASK in
             if [[ ${example} == *sctp* ]]; then
                 if [ ${SCTP_PRESENT} -eq 1 ]; then
                     pushd ${BASE_DIR}/${example}
-                    ${CARGO} build --release
+                    ${CARGO} build --release -j `nproc`
                     popd
                 fi
             else
                 pushd ${BASE_DIR}/${example}
-                ${CARGO} build --release
+                ${CARGO} build --release -j `nproc`
                 popd
             fi
         done

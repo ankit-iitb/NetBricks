@@ -1,8 +1,8 @@
 #![recursion_limit = "1024"]
-#![feature(asm)]
+
 #![feature(log_syntax)]
 #![feature(box_syntax)]
-#![feature(specialization)]
+#![feature(min_specialization)]
 #![feature(slice_concat_ext)]
 
 //#![feature(fnbox)]

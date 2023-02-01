@@ -46,7 +46,7 @@ impl<T: AddAssign<T> + Default + Clone> CpMergeableStoreDataPath<T> {
                 .try_send(self.cache.drain(0..).collect())
                 .is_ok()
             {
-                ()
+                
             }
         }
     }
@@ -92,8 +92,7 @@ impl<T: AddAssign<T> + Default + Clone> CpMergeableStoreControlPlane<T> {
     #[inline]
     pub fn remove(&mut self, flow: &Flow) -> T {
         self.flow_counters
-            .remove(flow)
-            .unwrap_or_else(Default::default)
+            .remove(flow).unwrap_or_default()
     }
 }
 
@@ -111,7 +110,7 @@ pub fn new_cp_mergeable_store<T: AddAssign<T> + Default + Clone>(
         CpMergeableStoreDataPath {
             cache: Vec::with_capacity(delay),
             updates: 0,
-            delay: delay,
+            delay,
             channel: sender,
         },
         box CpMergeableStoreControlPlane {

@@ -158,8 +158,8 @@ impl PmdPort {
             Ok(CacheAligned::allocate(PortQueue {
                 port: port.clone(),
                 port_id: port.port,
-                txq: txq,
-                rxq: rxq,
+                txq,
+                rxq,
                 stats_rx: port.stats_rx[rxq as usize].clone(),
                 stats_tx: port.stats_tx[txq as usize].clone(),
             }))
@@ -220,7 +220,7 @@ impl PmdPort {
             if ret == 0 {
                 Ok(Arc::new(PmdPort {
                     connected: true,
-                    port: port,
+                    port,
                     rxqs: actual_rxqs,
                     txqs: actual_txqs,
                     should_close: true,
@@ -247,7 +247,7 @@ impl PmdPort {
         if port >= 0 {
             Ok(Arc::new(PmdPort {
                 connected: true,
-                port: port,
+                port,
                 rxqs: 1,
                 txqs: 1,
                 should_close: false,
@@ -267,7 +267,7 @@ impl PmdPort {
                 if port >= 0 {
                     Ok(Arc::new(PmdPort {
                         connected: true,
-                        port: port,
+                        port,
                         rxqs: 1,
                         txqs: 1,
                         should_close: false,

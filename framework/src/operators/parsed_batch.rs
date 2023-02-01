@@ -39,7 +39,7 @@ where
     #[inline]
     pub fn new(parent: V) -> ParsedBatch<T, V> {
         ParsedBatch {
-            parent: parent,
+            parent,
             phantom: PhantomData,
         }
     }

@@ -10,9 +10,9 @@ fn parse_ld_archive(ar: &Path) -> Vec<String> {
     f.read_to_string(&mut content).unwrap();
     if "GROUP" == &content[0..5] {
         println!("Found group");
-        let open_idx = content.find("(").unwrap_or_else(|| content.len());
+        let open_idx = content.find('(').unwrap_or(content.len());
         let remove_open = content[open_idx + 1..].trim();
-        let end_idx = remove_open.find(")").unwrap_or_else(|| remove_open.len());
+        let end_idx = remove_open.find(')').unwrap_or(remove_open.len());
         let remaining = remove_open[..end_idx].trim();
         println!("Remaining is {}", remaining);
         remaining

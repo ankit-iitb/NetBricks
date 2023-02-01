@@ -18,7 +18,7 @@ where
     V: Batch + BatchIterator + Act,
 {
     pub fn new(parent: V) -> ResetParsingBatch<V> {
-        ResetParsingBatch { parent: parent }
+        ResetParsingBatch { parent }
     }
 }
 
@@ -35,12 +35,9 @@ where
 
     #[inline]
     unsafe fn next_payload(&mut self, idx: usize) -> Option<PacketDescriptor<NullHeader, EmptyMetadata>> {
-        match self.parent.next_payload(idx) {
-            Some(PacketDescriptor { packet }) => Some(PacketDescriptor {
+        self.parent.next_payload(idx).map(|PacketDescriptor { packet }| PacketDescriptor {
                 packet: packet.reset(),
-            }),
-            None => None,
-        }
+            })
     }
 }
 

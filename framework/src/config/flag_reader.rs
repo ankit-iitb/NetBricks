@@ -92,7 +92,7 @@ pub fn read_matches(matches: &Matches, opts: &Options) -> NetbricksConfiguration
             .map(|n: &String| {
                 n.parse()
                     .ok()
-                    .expect(&format!("Core cannot be parsed {}", n))
+                    .unwrap_or_else(|| panic!("Core cannot be parsed {}", n))
             })
             .collect();
 
@@ -108,8 +108,8 @@ pub fn read_matches(matches: &Matches, opts: &Options) -> NetbricksConfiguration
         }
         cores.dedup();
         NetbricksConfiguration {
-            cores: cores,
-            ports: ports,
+            cores,
+            ports,
             ..configuration
         }
     } else {

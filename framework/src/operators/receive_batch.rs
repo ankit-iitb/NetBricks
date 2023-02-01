@@ -15,8 +15,8 @@ pub struct ReceiveBatch<T: PacketRx> {
 impl<T: PacketRx> ReceiveBatch<T> {
     pub fn new_with_parent(parent: PacketBatch, queue: T) -> ReceiveBatch<T> {
         ReceiveBatch {
-            parent: parent,
-            queue: queue,
+            parent,
+            queue,
             received: 0,
         }
     }
@@ -24,7 +24,7 @@ impl<T: PacketRx> ReceiveBatch<T> {
     pub fn new(queue: T) -> ReceiveBatch<T> {
         ReceiveBatch {
             parent: PacketBatch::new(32),
-            queue: queue,
+            queue,
             received: 0,
         }
     }
@@ -53,9 +53,9 @@ impl<T: PacketRx> Act for ReceiveBatch<T> {
         self.parent.act();
         self.parent
             .recv(&self.queue)
-            .and_then(|x| {
+            .map(|x| {
                 self.received += x as u64;
-                Ok(x)
+                x
             })
             .expect("Receive failure");
     }

@@ -57,7 +57,7 @@ impl<T: AddAssign<T> + Default> DpMergeableStore<T> {
     #[inline]
     pub fn remove(&mut self, flow: &Flow) -> T {
         self.merge_cache();
-        self.state.remove(flow).unwrap_or_else(Default::default)
+        self.state.remove(flow).unwrap_or_default()
     }
 
     /// Iterate over all the stored entries. This is a bit weird to do in the data plane.

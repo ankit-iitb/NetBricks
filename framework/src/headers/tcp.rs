@@ -49,9 +49,7 @@ impl fmt::Display for TcpHeader {
             self.data_offset()
         );
         let ret = self.fmt_flags(f);
-        if ret.is_err() {
-            return ret;
-        }
+        ret?;
         write!(
             f,
             "cwnd {} csum {} urgent {}",
