@@ -1,6 +1,6 @@
 #!/bin/bash
 # Stop on any errors
-set -e
+set -ex
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 BUILD_SCRIPT=$( basename "$0" )
 
@@ -258,16 +258,7 @@ case $TASK in
         popd
         ;;
     build)
-<<<<<<< HEAD
-        deps
-
-=======
-        find_sctp
->>>>>>> c35bde0 (Minor.)
         native
-
-        find_sctp
-
         pushd $BASE_DIR/framework
         if [ ${SCTP_PRESENT} -eq 1 ]; then
             ${CARGO} build --release --features "sctp"

@@ -1,4 +1,4 @@
-use super::super::super::native_include as ldpdk;
+use super::super::super::native_include::dpdk_bindings as ldpdk;
 pub type MBuf = ldpdk::rte_mbuf;
 
 // FIXME: Remove this once we start using these functions correctly

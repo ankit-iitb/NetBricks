@@ -4,12 +4,8 @@ use e2d2::operators::*;
 #[inline]
 fn lat() {
     unsafe {
-        asm!("nop"
-             :
-             :
-             :
-             : "volatile");
-    }
+        asm!("nop");
+    } 
 }
 
 #[inline]

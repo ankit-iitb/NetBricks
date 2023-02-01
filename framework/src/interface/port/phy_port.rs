@@ -1,5 +1,3 @@
-use crate::native_include::dpdk_bindings::rte_eth_macaddr_get;
-
 use super::super::{PacketRx, PacketTx};
 use super::PortStats;
 use allocators::*;
@@ -13,6 +11,9 @@ use std::ffi::CString;
 use std::fmt;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
+
+use crate::native_include::dpdk_bindings::rte_eth_macaddr_get;
+use crate::native_include::dpdk_bindings::rte_ether_addr;
 
 /// A DPDK based PMD port. Send and receive should not be called directly on this structure but on the port queue
 /// structure instead.

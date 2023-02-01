@@ -151,12 +151,12 @@ fn main() {
         })
         .collect();
     let mut pkts_so_far = (0, 0);
-    let mut start = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
+    let mut start = time::OffsetDateTime::now_utc().unix_timestamp_nanos() as f64 as f64 / CONVERSION_FACTOR;
     let sleep_time = Duration::from_millis(500);
     loop {
         thread::sleep(sleep_time); // Sleep for a bit
         consumer.sync();
-        let now = time::precise_time_ns() as f64 / CONVERSION_FACTOR;
+        let now = time::OffsetDateTime::now_utc().unix_timestamp_nanos() as f64 as f64 / CONVERSION_FACTOR;
         if now - start > 1.0 {
             let mut rx = 0;
             let mut tx = 0;
