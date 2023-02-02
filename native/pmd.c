@@ -15,12 +15,12 @@ static const struct rte_eth_conf default_eth_conf = {
     .lpbk_mode = 0,
     .rxmode =
         {
-            .mq_mode        = ETH_MQ_RX_RSS, /* Use RSS without DCB or VMDQ */
-            .max_rx_pkt_len = 0,             /* valid only if jumbo is on */
-            .split_hdr_size = 0,             /* valid only if HS is on */
-            .split_hdr_size = 0,             /* Header Split off */
-            .offloads = 0, //DEV_RX_OFFLOAD_IPV4_CKSUM | DEV_RX_OFFLOAD_KEEP_CRC, /* IP checksum and CRC strip offload */
-            .max_rx_pkt_len = 0, /* Maximum packet length */
+            .mq_mode        = ETH_MQ_RX_NONE, /* Disable RSS, DCB or VMDQ */
+            .max_rx_pkt_len = 0,              /* valid only if jumbo is on */
+            .split_hdr_size = 0,              /* valid only if HS is on */
+            .split_hdr_size = 0,              /* Header Split off */
+            .offloads       = 0,              /* No offload */
+            .max_rx_pkt_len = 0,              /* Maximum packet length */
         },
     .txmode =
         {
@@ -29,7 +29,7 @@ static const struct rte_eth_conf default_eth_conf = {
     /* FIXME: Find supported RSS hashes from rte_eth_dev_get_info */
     .rx_adv_conf.rss_conf =
         {
-            .rss_hf  = 0, //ETH_RSS_IP | ETH_RSS_UDP | ETH_RSS_TCP | ETH_RSS_SCTP,
+            .rss_hf  = 0,
             .rss_key = NULL,
         },
     /* No flow director */
@@ -110,6 +110,46 @@ void enumerate_pmd_ports() {
     }
 }
 
+static int log_eth_dev_info(struct rte_eth_dev_info* dev_info) {
+    if (!dev_info)
+        return -1;
+    RTE_LOG(INFO, PMD, "driver_name: %s (if_index: %d)\n", dev_info->driver_name, dev_info->if_index);
+    RTE_LOG(INFO, PMD, "max_rx_queues / nb_rx_queue: %d / %d\n", dev_info->max_rx_queues, dev_info->nb_rx_queues);
+    RTE_LOG(INFO, PMD, "max_tx_queues / nb_tx_queue : %d / %d\n", dev_info->max_tx_queues, dev_info->nb_tx_queues);
+    RTE_LOG(INFO, PMD, "rx_offload_capa: %lx\n", dev_info->rx_offload_capa);
+    RTE_LOG(INFO, PMD, "rx_queue_offload_capa: %lx\n", dev_info->rx_queue_offload_capa);
+    RTE_LOG(INFO, PMD, "tx_offload_capa: %lx\n", dev_info->tx_offload_capa);
+    RTE_LOG(INFO, PMD, "tx_queue_offload_capa: %lx\n", dev_info->tx_queue_offload_capa);
+    RTE_LOG(INFO, PMD, "flow_type_rss_offloads: %lx\n\n", dev_info->flow_type_rss_offloads);
+    return 0;
+}
+
+static int log_eth_rxconf(struct rte_eth_rxconf* rxconf) {
+    if (!rxconf)
+        return -1;
+    RTE_LOG(INFO, PMD, "rx_thresh (p,h,w): (%d, %d, %d)\n", rxconf->rx_thresh.pthresh,
+            rxconf->rx_thresh.hthresh, rxconf->rx_thresh.wthresh);
+    RTE_LOG(INFO, PMD, "rx_free_thresh: %d\n", rxconf->rx_free_thresh);
+    RTE_LOG(INFO, PMD, "rx_drop_en: %d\n", rxconf->rx_drop_en);
+    RTE_LOG(INFO, PMD, "rx_deferred_start: %d\n", rxconf->rx_deferred_start);
+    RTE_LOG(INFO, PMD, "rx_offloads: 0x%lx\n\n", rxconf->offloads);
+
+    return 0;
+}
+
+static int log_eth_txconf(struct rte_eth_txconf* txconf) {
+    if (!txconf)
+        return -1;
+    RTE_LOG(INFO, PMD, "tx_thresh (p,h,w): (%d, %d, %d)\n", txconf->tx_thresh.pthresh,
+            txconf->tx_thresh.hthresh, txconf->tx_thresh.wthresh);
+    RTE_LOG(INFO, PMD, "tx_free_thresh: %d\n", txconf->tx_free_thresh);
+    RTE_LOG(INFO, PMD, "tx_rs_thresh: %d\n", txconf->tx_rs_thresh);
+    RTE_LOG(INFO, PMD, "tx_deferred_start: %d\n", txconf->tx_deferred_start);
+    RTE_LOG(INFO, PMD, "tx_offloads: 0x%lx\n", txconf->offloads);
+
+    return 0;
+}
+
 int init_pmd_port(int port, int rxqs, int txqs, int rxq_core[], int txq_core[], int nrxd, int ntxd,
                   int loopback, int tso, int csumoffload) {
     struct rte_eth_dev_info dev_info = {};
@@ -145,6 +185,17 @@ int init_pmd_port(int port, int rxqs, int txqs, int rxq_core[], int txq_core[], 
     eth_txconf  = dev_info.default_txconf;
     tso         = !(!tso);
     csumoffload = !(!csumoffload);
+
+    if (csumoffload) {
+        if (dev_info.tx_offload_capa & DEV_TX_OFFLOAD_IPV4_CKSUM) {
+            eth_txconf.offloads |= DEV_TX_OFFLOAD_IPV4_CKSUM;
+            eth_conf.txmode.offloads |= DEV_TX_OFFLOAD_IPV4_CKSUM;
+        }
+        if (dev_info.rx_offload_capa & (DEV_RX_OFFLOAD_IPV4_CKSUM | DEV_RX_OFFLOAD_KEEP_CRC)) {
+            eth_rxconf.offloads |= DEV_RX_OFFLOAD_IPV4_CKSUM | DEV_RX_OFFLOAD_KEEP_CRC;
+            eth_conf.rxmode.offloads |= DEV_RX_OFFLOAD_IPV4_CKSUM | DEV_RX_OFFLOAD_KEEP_CRC;
+        }
+    }
     // eth_txconf.txq_flags = ETH_TXQ_FLAGS_NOVLANOFFL | ETH_TXQ_FLAGS_NOMULTSEGS * (1 - tso) |
     //                        ETH_TXQ_FLAGS_NOXSUMS * (1 - csumoffload);
 
@@ -153,8 +204,18 @@ int init_pmd_port(int port, int rxqs, int txqs, int rxq_core[], int txq_core[], 
         return ret; /* Don't need to clean up here */
     }
 
+    rte_eth_dev_info_get(port, &dev_info);
+    RTE_LOG(INFO, PMD, "--- rte_eth_dev_info:\n");
+    log_eth_dev_info(&dev_info);
+    RTE_LOG(INFO, PMD, "--- using eth_rxconf:\n");
+    log_eth_rxconf(&eth_rxconf);
+    RTE_LOG(INFO, PMD, "--- using eth_txconf:\n");
+    log_eth_txconf(&eth_txconf);
+
     /* Set to promiscuous mode */
-    rte_eth_promiscuous_enable(port);
+    rte_eth_promiscuous_disable(port);
+    ret = rte_eth_promiscuous_get(port);
+    RTE_LOG(INFO, PMD, "Promiscuous mode is %s\n\n", ret == 0 ? "disabled" : "enabled");
 
     for (i = 0; i < rxqs; i++) {
         int sid = rte_lcore_to_socket_id(rxq_core[i]);
@@ -210,6 +271,7 @@ int find_port_with_pci_address(const char* pci) {
     uint16_t pi;
     uint8_t port;
     struct rte_dev_iterator iterator;
+    int max_queues = 0;
 
     // Cannot parse address
     if (rte_pci_addr_parse(pci, &addr) != 0) {
@@ -222,7 +284,8 @@ int find_port_with_pci_address(const char* pci) {
         struct rte_pci_device* pci_dev;
 
         rte_eth_dev_info_get(i, &dev_info);
-        pci_dev = RTE_DEV_TO_PCI(dev_info.device);
+        max_queues = dev_info.max_rx_queues > max_queues ? dev_info.max_rx_queues : max_queues;
+        pci_dev    = RTE_DEV_TO_PCI(dev_info.device);
 
         if (pci_dev) {
             if (rte_pci_addr_cmp(&addr, &pci_dev->addr)) {
@@ -232,20 +295,20 @@ int find_port_with_pci_address(const char* pci) {
     }
 
     /* If not found, maybe the device has not been attached yet */
-
     snprintf(devargs, 1024, "%04x:%02x:%02x.%02x", addr.domain, addr.bus, addr.devid, addr.function);
 
-    uint16_t portid_ptr[16];
+    uint16_t portid_ptr[max_queues];
     uint16_t* ptr;
-    ptr = portid_ptr;
-    int count=0;
+    ptr       = portid_ptr;
+    int count = 0;
 
     RTE_ETH_FOREACH_MATCHING_DEV(pi, devargs, &iterator) {
         /* setup ports matching the devargs used for probing */
         *ptr = pi;
         ptr++;
         count++;
-        if (count >= 16) break;
+        if (count >= max_queues)
+            break;
     }
     if (count == 0) {
         return -ENODEV;
@@ -275,15 +338,16 @@ int attach_pmd_device(const char* devname) {
 
     uint16_t portid_ptr[16];
     uint16_t* ptr;
-    ptr = portid_ptr;
-    int count=0;
+    ptr       = portid_ptr;
+    int count = 0;
 
     RTE_ETH_FOREACH_MATCHING_DEV(pi, devname, &iterator) {
         /* setup ports matching the devargs used for probing */
         *ptr = pi;
         ptr++;
         count++;
-        if (count >= 16) break;
+        if (count >= 16)
+            break;
     }
     if (count == 0) {
         return -ENODEV;

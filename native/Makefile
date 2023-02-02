@@ -16,7 +16,7 @@ endif
 
 LDFLAGS_SHARED = $(shell pkg-config --libs libdpdk)
 LIBS += $(LDFLAGS_SHARED)
-LIBS += -lm -lpthread -ldl -lpcap -lnuma -lrte_net_i40e -lrte_net_ixgbe -lrte_net_ring
+LIBS += -lm -lpthread -ldl -lpcap -lnuma -lrte_pmd_i40e -lrte_pmd_ixgbe -lrte_pmd_ring
 
 # change fpic to fPIC if something fails
 CFLAGS = $(shell pkg-config --cflags libdpdk)

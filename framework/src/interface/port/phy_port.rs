@@ -12,8 +12,7 @@ use std::fmt;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use crate::native_include::dpdk_bindings::rte_eth_macaddr_get;
-use crate::native_include::dpdk_bindings::rte_ether_addr;
+use native_include::dpdk_bindings::rte_ether_addr;
 
 /// A DPDK based PMD port. Send and receive should not be called directly on this structure but on the port queue
 /// structure instead.
@@ -431,17 +430,15 @@ impl PmdPort {
 
     #[inline]
     pub fn mac_address(&self) -> MacAddress {
-        let mut address: rte_ether_addr = rte_ether_addr { addr_bytes: [0u8; 6] };
-        unsafe {
-            rte_eth_macaddr_get(self.port as u16, &mut address);
-        }
+        let mut addr: rte_ether_addr = rte_ether_addr { addr_bytes: [0; 6] };
+        unsafe { get_mac_address(self.port as u16, &mut addr) };
         MacAddress::new(
-            address.addr_bytes[0],
-            address.addr_bytes[1],
-            address.addr_bytes[2],
-            address.addr_bytes[3],
-            address.addr_bytes[4],
-            address.addr_bytes[5],
+            addr.addr_bytes[0],
+            addr.addr_bytes[1],
+            addr.addr_bytes[2],
+            addr.addr_bytes[3],
+            addr.addr_bytes[4],
+            addr.addr_bytes[5],
         )
     }
 }

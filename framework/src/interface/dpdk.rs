@@ -38,13 +38,7 @@ pub fn init_system_secondary(name: &str, core: i32) {
     let name_cstr = CString::new(name).unwrap();
     let mut vdev_list = vec![];
     unsafe {
-        let ret = zcsi::init_secondary(
-            name_cstr.as_ptr(),
-            name.len() as i32,
-            core,
-            vdev_list.as_mut_ptr(),
-            0,
-        );
+        let ret = zcsi::init_secondary(name_cstr.as_ptr(), name.len() as i32, core, vdev_list.as_mut_ptr(), 0);
         if ret != 0 {
             panic!("Could not initialize secondary process errno {}", ret)
         }
@@ -97,9 +91,7 @@ pub fn init_thread(tid: i32, core: i32) {
     });
     if numa == -1 {
         println!("No NUMA information found, support disabled");
-    } else {
-        println!("Running on node {}", numa);
-    };
+    }
 }
 
 #[inline]

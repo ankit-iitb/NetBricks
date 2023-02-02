@@ -106,7 +106,7 @@ static int init_eal(char* name, int secondary, int core, int mempool_size, char*
     add_arg(&rte_argc, rte_argv, opt_lcore_bitmap);
 
     for (int i = 0; i < wl_count; i++) {
-        add_arg(&rte_argc, rte_argv, "-a");
+        add_arg(&rte_argc, rte_argv, "-w");
         add_arg(&rte_argc, rte_argv, whitelist[i]);
     }
     for (int i = 0; i < vdev_count; i++) {
@@ -115,10 +115,10 @@ static int init_eal(char* name, int secondary, int core, int mempool_size, char*
     }
 
     /* This just makes sure that by default everything is blacklisted */
-    add_arg(&rte_argc, rte_argv, "-a");
+    add_arg(&rte_argc, rte_argv, "-w");
     add_arg(&rte_argc, rte_argv, "99:99.0");
 
-    add_arg(&rte_argc, rte_argv, "--main-lcore");
+    add_arg(&rte_argc, rte_argv, "--master-lcore");
     add_arg(&rte_argc, rte_argv, opt_master_lcore);
 
     add_arg(&rte_argc, rte_argv, "-n");
