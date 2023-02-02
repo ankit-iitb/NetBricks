@@ -3,7 +3,7 @@ pub use self::mac::*;
 pub use self::null_header::*;
 pub use self::tcp::*;
 pub use self::udp::*;
-mod mac;
+pub mod mac;
 mod ip;
 mod udp;
 mod tcp;

@@ -1,7 +1,9 @@
+use crate::native::zcsi::get_tsc_hz;
+
 pub use self::asm::*;
 pub use self::flow::*;
-mod flow;
 mod asm;
+mod flow;
 
 pub const PAGE_SIZE: usize = 4096; // Page size in bytes, not using huge pages here.
 
@@ -23,4 +25,9 @@ pub fn round_to_power_of_2(mut size: usize) -> usize {
     size |= size >> 32;
     size = size.wrapping_add(1);
     size
+}
+
+#[inline]
+pub fn rte_get_tsc_hz() -> u64 {
+    unsafe { get_tsc_hz() }
 }

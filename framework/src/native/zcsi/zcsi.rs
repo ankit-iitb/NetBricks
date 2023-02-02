@@ -35,6 +35,7 @@ extern "C" {
     pub fn send_pkts(port: i32, qid: i32, pkts: *mut *mut MBuf, len: i32) -> i32;
     pub fn num_pmd_ports() -> i32;
     pub fn get_mac_address(port_id: u16, mac_addr: *mut rte_ether_addr) -> i32;
+    pub fn get_tsc_hz() -> u64;
     pub fn init_bess_eth_ring(ifname: *const c_char, core: i32) -> i32;
     pub fn init_ovs_eth_ring(iface: i32, core: i32) -> i32;
     pub fn find_port_with_pci_address(pciaddr: *const c_char) -> i32;

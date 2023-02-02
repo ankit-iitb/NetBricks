@@ -1,7 +1,7 @@
 #include <rte_config.h>
+#include <rte_ethdev.h>
 #include <rte_hash_crc.h>
 #include <rte_ip.h>
-#include <rte_ethdev.h>
 
 // Make rte_hash_crc available to Rust. This adds some cost, will look into producing a pure Rust
 // version.
@@ -15,4 +15,8 @@ uint16_t ipv4_cksum(const void* iphdr) {
 
 int get_mac_address(uint16_t port_id, struct rte_ether_addr* mac_addr) {
     return rte_eth_macaddr_get(port_id, mac_addr);
+}
+
+uint64_t get_tsc_hz() {
+    return rte_get_tsc_hz();
 }
