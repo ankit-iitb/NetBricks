@@ -26,16 +26,10 @@ static const struct rte_eth_conf default_eth_conf = {
         {
             .mq_mode = ETH_MQ_TX_NONE, /* Disable DCB and VMDQ */
         },
-    /* FIXME: Find supported RSS hashes from rte_eth_dev_get_info */
-    .rx_adv_conf.rss_conf =
-        {
-            .rss_hf  = 0,
-            .rss_key = NULL,
-        },
-    /* No flow director */
     .fdir_conf =
         {
-            .mode = RTE_FDIR_MODE_NONE,
+            .mode    = RTE_FDIR_MODE_PERFECT,
+            .pballoc = RTE_FDIR_PBALLOC_64K,
         },
     /* No interrupt */
     .intr_conf =
@@ -241,6 +235,45 @@ int init_pmd_port(int port, int rxqs, int txqs, int rxq_core[], int txq_core[], 
         printf("Failed to start \n");
         return ret; /* Clean up things */
     }
+
+    /* Flow director setup */
+    int retval = 0;
+
+    /*
+     * First, setup details regarding the flow to be filtered. Restrict to
+     * IP+UDP packets, and look at only the UDP destination port.
+     */
+    struct rte_eth_fdir_filter_info filter_info;
+    memset(&filter_info, 0, sizeof(filter_info));
+    filter_info.info_type                      = RTE_ETH_FDIR_FILTER_INPUT_SET_SELECT;
+    filter_info.info.input_set_conf.flow_type  = RTE_ETH_FLOW_NONFRAG_IPV4_UDP;
+    filter_info.info.input_set_conf.inset_size = 1;
+    filter_info.info.input_set_conf.field[0]   = RTE_ETH_INPUT_SET_L4_UDP_DST_PORT;
+    filter_info.info.input_set_conf.op         = RTE_ETH_INPUT_SET_SELECT;
+    retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, RTE_ETH_FILTER_SET, &filter_info);
+    if (retval != 0) {
+        rte_exit(EXIT_FAILURE, "Could not set fdir info: %s\n", strerror(-retval));
+    }
+
+    /*
+     * Next, configure a rule for each receive queue. Redirect packets with UDP
+     * destination port 'i' to receive queue 'i'.
+     */
+    for (i = 0; i < rxqs; i++) {
+        struct rte_eth_fdir_filter fdirf;
+        memset(&fdirf, 0, sizeof(fdirf));
+        fdirf.soft_id                       = i;
+        fdirf.input.flow_type               = RTE_ETH_FLOW_NONFRAG_IPV4_UDP;
+        fdirf.input.flow.udp4_flow.dst_port = rte_cpu_to_be_16(i);
+        fdirf.action.rx_queue               = i;
+        fdirf.action.behavior               = RTE_ETH_FDIR_ACCEPT;
+        fdirf.action.report_status          = RTE_ETH_FDIR_NO_REPORT_STATUS;
+        retval = rte_eth_dev_filter_ctrl(port, RTE_ETH_FILTER_FDIR, RTE_ETH_FILTER_ADD, &fdirf);
+        if (retval != 0) {
+            rte_exit(EXIT_FAILURE, "Could not add fdir UDP filter: %s\n", strerror(-retval));
+        }
+    }
+
     return 0;
 }
 
