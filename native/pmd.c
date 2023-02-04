@@ -236,6 +236,13 @@ int init_pmd_port(int port, int rxqs, int txqs, int rxq_core[], int txq_core[], 
         return ret; /* Clean up things */
     }
 
+    // TODO: This is a hack to get around the fact that the net_pcap driver
+    // does not support FDIR.
+    if (strcmp(dev_info.driver_name, "net_pcap") == 0) {
+        eth_conf.fdir_conf.mode = RTE_FDIR_MODE_NONE;
+        return 0;
+    }
+
     /* Flow director setup */
     int retval = 0;
 
